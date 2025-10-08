@@ -54,7 +54,6 @@ function addUser($data){
 				else{
 					$existUser=getUser($data['email'],$pwd_non_hash);
 					$_SESSION['connectedUser']= $existUser;
-					var_dump($_SESSION['connectedUser']);
 					deconnectDB($pdo);
 					return true;
 				}
@@ -102,7 +101,6 @@ function addClient($data){
 					return false;
 				}
 				deconnectDB($pdo);
-				header('location: ../menu/client.php');
 				return true;
 			} 
 			catch(PDOException $e){
@@ -152,7 +150,6 @@ function addVendeur($data){
 					return false;
 				}
 				deconnectDB($pdo);
-				header('location: ../menu/vendeur.php');
 				return true;
 			}
 			catch(PDOException $e){
@@ -202,7 +199,48 @@ function getUser($email,$pwd){
 	}
 }
 
+function getRole($iduserConnected){
+	$pdo=connectDB();
+	if(!$pdo){
+		return false;
+	}
+
+	$idUser = $iduserConnected;
+	$stmt = $pdo->prepare("SELECT * FROM vendeur WHERE id_user = :id");
+	$stmt->execute(['id' => $idUser]);
+	$vendeur = $stmt->fetch(PDO::FETCH_ASSOC);
+	if($vendeur){
+		return "vendeur";
+	}
+
+	$stmt = $pdo->prepare("SELECT * FROM client WHERE id_user = :id");
+	$stmt->execute(['id' => $idUser]);
+	$client = $stmt->fetch(PDO::FETCH_ASSOC);
+	if($client){
+		return "client";
+	}
+
+	$stmt = $pdo->prepare("SELECT * FROM gestionnaire WHERE id_user = :id");
+	$stmt->execute(['id' => $idUser]);
+	$gestionnaire = $stmt->fetch(PDO::FETCH_ASSOC);
+	if($gestionnaire){
+		return "gestionnaire";
+	}
+	
+	else{
+		deconnectDB($pdo);
+		echo "probleme requete";
+		return false;
+	}
+
+	
+}
+
 function connectUser($data){
+	$pdo=connectDB();
+	if(!$pdo){
+		return false;
+	}
 		
 		$user = getUser($data['email'],$data['motdepasse']);
 		if(!$user){
@@ -210,10 +248,29 @@ function connectUser($data){
 			return false;
 		}
 		else{
+
 			$_SESSION['connectedUser']=$user;
-			header('location: ../menu/client.php');
+			$idUser= $user['id_user'];
 		}
-}
+		$role = getRole ($idUser);
+
+		if($role == "vendeur"){
+			deconnectDB($pdo);
+			header('location: ../vendeur/menuVendeur.php');
+		}
+		else if($role == "client"){
+			deconnectDB($pdo);
+			header('location: ../client/menuClient.php');
+		}
+		else if($role == "gestionnaire"){
+			deconnectDB($pdo);
+			header('location: ../menu/gestionnaire.php');
+		}
+		else{
+			echo "problème de rôle";
+			return false;
+		}
+	}
 	
 	function disconnectUser(){
 		session_unset();
