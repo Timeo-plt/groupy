@@ -210,6 +210,7 @@ function getRole($iduserConnected){
 	$stmt->execute(['id' => $idUser]);
 	$vendeur = $stmt->fetch(PDO::FETCH_ASSOC);
 	if($vendeur){
+		$_SESSION['connectedVendeur']= $vendeur;
 		return "vendeur";
 	}
 
@@ -217,6 +218,7 @@ function getRole($iduserConnected){
 	$stmt->execute(['id' => $idUser]);
 	$client = $stmt->fetch(PDO::FETCH_ASSOC);
 	if($client){
+		$_SESSION['connectedClient']= $client;
 		return "client";
 	}
 
@@ -279,4 +281,81 @@ function connectUser($data){
 		
 } 
 
+function UpdateUser($data){
+		$pdo=connectDB();
+	if(!$pdo){
+		return false;
+	}
+	$data['id_user']=$_SESSION['connectedUser']['id_user'];
+	$data['motdepasse']=$_SESSION['connectedUser']['motdepasse'];
+	$req = "UPDATE utilisateur SET nom =?, prenom=?, adresse=?, phone=?,email=?,motdepasse=? WHERE id_user=?";
+	$stmt = $pdo->prepare($req);
+	$params = [
+		$data['nom'],		
+		$data['prenom'],
+		$data['adresse'],
+		$data['phone'],
+		$data['email'],
+		$data['motdepasse'],
+		$data['id_user'],
+	];
+	$result = $stmt->execute($params);
+	$_SESSION['connectedUser']['nom'] = $data['nom'];
+	$_SESSION['connectedUser']['prenom'] = $data['prenom'];
+	$_SESSION['connectedUser']['adresse'] = $data['adresse'];
+	$_SESSION['connectedUser']['phone'] = $data['phone'];
+	$_SESSION['connectedUser']['email'] = $data['email'];
+	$_SESSION['connectedUser']['motdepasse'] = $data['motdepasse'];
+	$_SESSION['connectedUser']['id_user'] = $data['id_user'];
+}
+
+
+function UpdateVendeur($data){
+	$pdo=connectDB();	
+	if(!$pdo){
+		return false;
+	}
+	$data['id_user']=$_SESSION['connectedUser']['id_user'];
+	$data['motdepasse']=$_SESSION['connectedUser']['motdepasse'];
+	$req = "UPDATE utilisateur SET nom =?, prenom=?, adresse=?, phone=?,email=?,motdepasse=? WHERE id_user=?";
+	$stmt = $pdo->prepare($req);
+	$params = [
+		$data['nom'],		
+		$data['prenom'],
+		$data['adresse'],
+		$data['phone'],
+		$data['email'],
+		$data['motdepasse'],
+		$data['id_user'],
+	];
+	$result = $stmt->execute($params);
+	$_SESSION['connectedUser']['nom'] = $data['nom'];
+	$_SESSION['connectedUser']['prenom'] = $data['prenom'];
+	$_SESSION['connectedUser']['adresse'] = $data['adresse'];
+	$_SESSION['connectedUser']['phone'] = $data['phone'];
+	$_SESSION['connectedUser']['email'] = $data['email'];
+	$_SESSION['connectedUser']['motdepasse'] = $data['motdepasse'];
+	$_SESSION['connectedUser']['id_user'] = $data['id_user'];
+	
+	if($result){
+		$data['id_user']=$_SESSION['connectedVendeur']['id_user'];
+		$req = "UPDATE vendeur SET nom_entreprise =?, siret=?, adresse_entreprise=?, email_pro=? WHERE id_user=?";
+		$stmt = $pdo->prepare($req);
+		$params = [
+			$data['nom_entreprise'],		
+			$data['siret'],
+			$data['adresse_entreprise'],
+			$data['email_pro'],
+			$data['id_user'],
+		];
+	$result = $stmt->execute($params);
+	$_SESSION['connectedVendeur']['nom_entreprise'] = $data['nom_entreprise'];
+	$_SESSION['connectedVendeur']['siret'] = $data['siret'];
+	$_SESSION['connectedVendeur']['adresse_entreprise'] = $data['adresse_entreprise'];
+	$_SESSION['connectedVendeur']['email_pro'] = $data['email_pro'];
+	$_SESSION['connectedVendeur']['id_user'] = $data['id_user'];
+	}
+
+		
+	}
 ?>
