@@ -226,6 +226,7 @@ function getRole($iduserConnected){
 	$stmt->execute(['id' => $idUser]);
 	$gestionnaire = $stmt->fetch(PDO::FETCH_ASSOC);
 	if($gestionnaire){
+		$_SESSION['connectedGestionnaire']= $gestionnaire;
 		return "gestionnaire";
 	}
 	
@@ -266,7 +267,7 @@ function connectUser($data){
 		}
 		else if($role == "gestionnaire"){
 			deconnectDB($pdo);
-			header('location: ../menu/gestionnaire.php');
+			header('location: ../gestionnaire/menuGestion.php');
 		}
 		else{
 			echo "problème de rôle";
@@ -309,6 +310,109 @@ function UpdateUser($data){
 	$_SESSION['connectedUser']['id_user'] = $data['id_user'];
 }
 
+function ajout_categorie($data) {
+	$pdo=connectDB();
+	if(!$pdo){
+		return false;
+	}
+
+	$idUser = $_SESSION['connectedUser']['id_user'];
+	$req = "SELECT * FROM gestionnaire WHERE id_user = ?";
+	$stmt = $pdo->prepare($req);
+	$stmt->execute([$idUser]);
+	$gestionnaire = $stmt->fetch(PDO::FETCH_ASSOC);
+	if(!$gestionnaire){
+		deconnectDB($pdo);
+		return false;
+	}
+	$idGestion = $gestionnaire['id_user'];
+
+	$req = "INSERT INTO categorie (id_gestionnaire, lib) VALUES (?, ?)";
+	$stmt = $pdo->prepare($req);
+	$params = [
+		$idGestion,
+		$data['lib'],
+	];
+	$result = $stmt->execute($params);
+	if($result){
+		deconnectDB($pdo);
+		return true;
+	}
+}
+
+function getCategorie(){
+	$pdo=connectDB();
+	if(!$pdo){
+		return false;
+	}
+	$req = "SELECT * FROM categorie WHERE lib IS NOT NULL"; 
+	$stmt = $pdo->prepare($req);
+	$result = $stmt->execute();
+	if(!$result){
+		deconnectDB($pdo);
+		return false;
+	}
+	else{
+		$categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		deconnectDB($pdo);
+		return $categories;
+
+	}
+
+
+}
+function ajout_produit($data){
+	$pdo = connectDB();
+	if(!$pdo){
+		return false;
+	}
+	$categorie = getCategorie();
+	if (!empty($categorie) && isset($categorie[0]['id_categorie'])) {
+		$idCategorie = $categorie[0]['id_categorie'];
+	} else {
+		echo "Aucune catégorie trouvée";
+		return false;
+	}
+	var_dump($idCategorie);
+
+
+	$iduser = $_SESSION['connectedUser']['id_user'];
+
+	$req = "INSERT INTO produit (id_categorie, description, prix, image, id_vendeur) VALUES (?,?,?,?,?)";
+	$stmt = $pdo->prepare($req);
+	$params = [
+		$idCategorie,
+		$data['description'],
+		$data['prix'],
+		$data['image'],
+		$iduser
+	];
+	$result = $stmt->execute($params);
+	if($result){
+		deconnectDB($pdo);
+		return true;
+	}
+}
+
+function getProduit(){
+	$pdo=connectDB();
+	if(!$pdo){
+		return false;
+	}
+	$req = "SELECT * FROM produit"; 
+	$stmt = $pdo->prepare($req);
+	$result = $stmt->execute();
+	if(!$result){
+		deconnectDB($pdo);
+		return false;
+	}
+	else{
+		$produits = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		deconnectDB($pdo);
+		return $produits;
+
+	}
+}
 
 function UpdateVendeur($data){
 	$pdo=connectDB();	

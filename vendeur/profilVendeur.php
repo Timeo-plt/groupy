@@ -46,6 +46,7 @@ if($_SESSION['connectedVendeur']){
                         <p class='card-title'>email pro: <?php echo $email_pro ?></p>
                         <form action="" method="post">
                             <button class="btn btn-outline-primary" name="modif_vendeur" >Modifier le profil</button>
+                            <a href="menuVendeur.php" class="btn btn-outline-secondary btn-sm">Retour</a>
                         </form>
                     </div>
                 </div>
@@ -108,11 +109,12 @@ if($_SESSION['connectedVendeur']){
         </div>
     </div>
 </div>
+
 <?php endif; ?>
 <?php
     if(isset($_POST['save_vendeur'])){
     // array_pop($_POST);
     UpdateVendeur($_POST);
-    header ("location ../client/profilClient.php");
+    header ("Location ../vendeur/profilVendeur.php");
 }
 ?>

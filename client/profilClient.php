@@ -38,7 +38,7 @@ if($_SESSION['connectedUser']){
                         <button class="btn btn-outline-primary" name="modif_client">Modifier le profil</button>
                         </form>
                         <br>
-                        <a href="menuClient.php"><button class="btn btn-outline-primary">Retour au menu</button></a>
+                        <a href="menuClient.php"><button class="btn btn-outline-primary">Retour</button></a>
                     </div>
                 </div>
             </div>

@@ -33,7 +33,8 @@
 require_once('../fonctions/login_fonction.php');
 if(isset($_POST['submit']))
 {
-  connectUser($_POST);
+   var_dump($_POST);
+   connectUser($_POST);
 }
 
 ?>
