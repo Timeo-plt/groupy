@@ -21,11 +21,11 @@ require_once('../fonctions/login_fonction.php');
             <?php
                 if($categorie = getCategorie()){
                     foreach($categorie as $cat){
-                        echo "<option value='".$cat['lib']."'>".$cat['lib']."</option>";
+                        echo "<option value='".$cat['id_categorie']."'>".$cat['lib']."</option>";
                     }
                 }
             ?>
-            </select>
+            </select>   
             </div>
             <div class="col-md-6">
             <label for="description" class="form-label">Description</label>
@@ -53,6 +53,5 @@ require_once('../fonctions/login_fonction.php');
 if(isset($_POST['submit'])){
     array_pop($_POST);
     ajout_produit($_POST);
-    header('Location: menuVendeur.php');
 }
 ?>

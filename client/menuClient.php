@@ -14,6 +14,7 @@
             <div class="d-flex ms-auto">
                 <a href="profilClient.php" class="btn btn-outline-primary">Profil</a>
             </div>
+            <a href="../login/index.php" class="btn btn-outline-secondary btn-sm">Se déconnecter</a>
         </div>
     </nav>
 </header>
@@ -43,7 +44,6 @@ if($produits = getProduit()){
 <footer class="bg-light text-center text-lg-start mt-auto w-100" style="position: fixed; bottom: 0; left: 0;">
     <div class="text-center p-3">
         © <?php echo date("Y"); ?> Groupe Vente. Tous droits réservés.
-        <a href="../login/index.php" class="btn btn-outline-secondary btn-sm">Se déconnecter</a>
     </div>
 </footer>
 </footer>

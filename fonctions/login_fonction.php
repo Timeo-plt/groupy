@@ -190,6 +190,7 @@ function getUser($email,$pwd){
 					}
 				}
 			}
+			
 		}
 		catch(PDOException $e){
 			echo "erreur : ".$e->getMessage();
@@ -273,7 +274,7 @@ function connectUser($data){
 			echo "problème de rôle";
 			return false;
 		}
-	}
+}
 	
 	function disconnectUser(){
 		session_unset();
@@ -366,22 +367,21 @@ function ajout_produit($data){
 	if(!$pdo){
 		return false;
 	}
-	$categorie = getCategorie();
-	if (!empty($categorie) && isset($categorie[0]['id_categorie'])) {
-		$idCategorie = $categorie[0]['id_categorie'];
-	} else {
-		echo "Aucune catégorie trouvée";
-		return false;
-	}
-	var_dump($idCategorie);
-
+	// $categorie = getCategorie();
+	// if (!empty($categorie) && isset($categorie[0]['id_categorie'])) {
+	// 	$idCategorie = $categorie[0]['id_categorie'];
+	// } else {
+	// 	echo "Aucune catégorie trouvée";
+	// 	return false;
+	// }
+	// var_dump($idCategorie);
 
 	$iduser = $_SESSION['connectedUser']['id_user'];
 
 	$req = "INSERT INTO produit (id_categorie, description, prix, image, id_vendeur) VALUES (?,?,?,?,?)";
 	$stmt = $pdo->prepare($req);
 	$params = [
-		$idCategorie,
+		$data['libelle'],
 		$data['description'],
 		$data['prix'],
 		$data['image'],
@@ -390,6 +390,7 @@ function ajout_produit($data){
 	$result = $stmt->execute($params);
 	if($result){
 		deconnectDB($pdo);
+		header('Location: menuVendeur.php');
 		return true;
 	}
 }
@@ -461,5 +462,121 @@ function UpdateVendeur($data){
 	}
 
 		
+}
+
+function update_produit($data, $idproduit){
+	$pdo=connectDB();
+	if(!$pdo){
+		return false;
 	}
+		$req = "UPDATE produit SET description =?, prix=?, image=? WHERE id_produit=$idproduit";
+	$stmt = $pdo->prepare($req);
+	$params = [
+		$data['description'],
+		$data['prix'],
+		$data['image']
+	];
+	$result = $stmt->execute($params);
+	if($result){
+		deconnectDB($pdo);
+		return true;
+	}
+	$produit['description'] = $data['description'];
+	$produit['prix'] = $data['prix'];
+	$produit['image'] = $data['image'];
+}
+
+function deleteProduit($idproduit){
+	$pdo=connectDB();
+	if(!$pdo){
+		deconnectDB($pdo);
+		return false;
+	}
+	$req = "DELETE FROM produit WHERE id_produit = $idproduit";
+	$stmt = $pdo->prepare($req);
+	$result = $stmt->execute();
+	if($result){
+		deconnectDB($pdo);
+		return true;
+	}
+}
+
+function getUtilisateur(){
+	$pdo = connectDB();
+	if(!$pdo){
+		return false;
+	}
+	$req = "SELECT * FROM utilisateur";
+	$stmt = $pdo->prepare($req);
+	$result = $stmt->execute();
+	if(!$result){
+		deconnectDB($pdo);
+		return false;
+	}
+	else{
+		$utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		deconnectDB($pdo);
+		return $utilisateurs;
+	}
+}
+
+function putPrevente($data, $produits){
+	
+	$pdo =connectDB();
+	if(!$pdo){
+		return false;
+	}
+	$req = "INSERT INTO prevente (date_limite, nombre_min, statut, prix_prevente,id_produit) VALUES (?,?,?,?,?)";
+	$stmt = $pdo->prepare($req);
+	$params = [
+		$data['date_limite'],
+		$data['nombre_min'],
+		$data['statut'],
+		$data['prix_prevente'],
+		$produits,
+	];	
+	$result = $stmt->execute($params);
+	if($result){
+		deconnectDB($pdo);
+		return true;
+	}
+	$prevente = $result;
+}
+
+function getprevente()  {
+	$pdo = connectDB();
+	if(!$pdo){
+		return false;
+	}
+	$req = "SELECT * FROM prevente";
+	$stmt = $pdo->prepare($req);
+	$result = $stmt->execute();
+	if(!$result){
+		deconnectDB($pdo);
+		return false;
+	}
+	else{
+		$preventes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		deconnectDB($pdo);
+		return $preventes;
+	}
+}
+function produit_prevente(){
+	$pdo = connectDB();
+	if(!$pdo){
+		return false;
+	}
+	$req = "SELECT description FROM produit JOIN prevente ON produit.id_produit = prevente.id_produit";
+	$stmt = $pdo->prepare($req);
+	$result = $stmt->execute();
+	if(!$result){
+		deconnectDB($pdo);
+		return false;
+	}
+	else{
+		$prodP = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		deconnectDB($pdo);
+		return $prodP;
+	}
+}
 ?>
