@@ -27,7 +27,10 @@
 
 <?php  require('../fonctions/login_fonction.php');
 $produits = getProduit();
+$prevente = getprevente();
+$onlyProduits = produitOnly();
 ?>
+
 <table class="table table-striped table-hover">
     <thead>
         <tr>
@@ -38,27 +41,36 @@ $produits = getProduit();
         </tr>
     </thead>
     <tbody>
-        <?php if (!empty($produits) && is_array($produits)): ?>
-            <?php foreach ($produits as $produit): ?>
+        <?php if (!empty($onlyProduits) && is_array($onlyProduits)): ?>
+            
+
+            <?php foreach ($onlyProduits as $onlyProduit): ?>
                 <tr>
-                    <td><?php echo htmlspecialchars($produit['image']); ?></td>
-                    <td><?php echo htmlspecialchars($produit['description']); ?></td>
-                    <td><?php echo htmlspecialchars($produit['prix']); ?> €</td>
+                    <td><?php echo htmlspecialchars($onlyProduit['image']); ?></td>
+                    <td><?php echo htmlspecialchars($onlyProduit['description']); ?></td>
+                    <td><?php echo htmlspecialchars($onlyProduit['prix']); ?> €</td>
                     <td class="text-end">
                         <div class="btn-group" role="group" aria-label="Actions">
-                            <form action="#" method="post" class="d-inline">
-                                <input type="hidden" name="id_produit" value="<?php echo htmlspecialchars($produit['id_produit']); ?>">
-                                <input type="hidden" name="description" value="<?php echo htmlspecialchars($produit['description']); ?>">
-                                <input type="hidden" name="image" value="<?php echo htmlspecialchars($produit['image']); ?>">
-                                <input type="hidden" name="prix" value="<?php echo htmlspecialchars($produit['prix']); ?>">
+                                <form action="#" method="post" class="d-inline">
+                                <input type="hidden" name="id_produit" value="<?php echo htmlspecialchars($onlyProduit['id_produit']); ?>">
+                                <input type="hidden" name="description" value="<?php echo htmlspecialchars($onlyProduit['description']); ?>">
+                                <input type="hidden" name="image" value="<?php echo htmlspecialchars($onlyProduit['image']); ?>">
+                                <input type="hidden" name="prix" value="<?php echo htmlspecialchars($onlyProduit['prix']); ?>">
                                 <button type="submit" name="modif_produit" class="btn btn-warning btn-sm">Modifier</button>
                             </form>
                             <form action="#" method="post" class="d-inline ms-2" onsubmit="return confirm('Supprimer ce produit ?');">
-                                <input type="hidden" name="id_produit" value="<?php echo htmlspecialchars($produit['id_produit']); ?>">
-                                <input type="hidden" name="description" value="<?php echo htmlspecialchars($produit['description']); ?>">
-                                <input type="hidden" name="image" value="<?php echo htmlspecialchars($produit['image']); ?>">
-                                <input type="hidden" name="prix" value="<?php echo htmlspecialchars($produit['prix']); ?>">
+                                <input type="hidden" name="id_produit" value="<?php echo htmlspecialchars($onlyProduit['id_produit']); ?>">
+                                <input type="hidden" name="description" value="<?php echo htmlspecialchars($onlyProduit['description']); ?>">
+                                <input type="hidden" name="image" value="<?php echo htmlspecialchars($onlyProduit['image']); ?>">
+                                <input type="hidden" name="prix" value="<?php echo htmlspecialchars($onlyProduit['prix']); ?>">
                                 <button type="submit" name="suppr_produit" class="btn btn-danger btn-sm">Supprimer</button>
+                            </form>
+                                <form action="#" method="post" class="d-inline ms-2" onsubmit="return confirm('Mettre ce produit en prévente ?');">
+                                <input type="hidden" name="id_produit" value="<?php echo htmlspecialchars($onlyProduit['id_produit']); ?>">
+                                <input type="hidden" name="description" value="<?php echo htmlspecialchars($onlyProduit['description']); ?>">
+                                <input type="hidden" name="image" value="<?php echo htmlspecialchars($onlyProduit['image']); ?>">
+                                <input type="hidden" name="prix" value="<?php echo htmlspecialchars($onlyProduit['prix']); ?>">
+                                <button type="submit" name="put_produit" class="btn btn-primary btn-sm">mettre en prevente</button>
                             </form>
                         </div>
                     </td>
@@ -71,12 +83,10 @@ $produits = getProduit();
         <?php endif; ?>
     </tbody>
 </table>
-<?php if(isset($_POST['modif_produit'])):
-?>
-
+<?php if(isset($_POST['modif_produit'])):?>
 <div class="card mx-auto mt-3" style="max-width:720px;">
     <div class="card-body">
-        <h5 class="card-title">Modifier le produit</h5>
+        <h5 class="card-title">Modifier le produit</h5> 
         <form action="#" method="post" class="row g-3">
             <input type="hidden" name="id_produit" value="<?php echo htmlspecialchars($_POST['id_produit']); ?>">
             <div class="col-12">
@@ -104,14 +114,54 @@ $produits = getProduit();
 </div>
 <?php else: ?>
 <?php endif; ?>
-<br>
-    <a href="ajtProduit.php" class="btn btn-success mt-2">Ajouter un produit</a>
+<?php if (isset($_POST['put_produit'])): ?>
+    <div class="card mx-auto mt-3" style="max-width:720px;">
+        <div class="card-body">
+            <h5 class="card-title">Ajouter en prévente</h5>
+            <form action="#" method="post" class="row g-3">
+                <input type="hidden" name="id_produit" value="<?php echo htmlspecialchars($_POST['id_produit']); ?>">
+                <div class="col-12">
+                    <label for="description" class="form-label">Description</label>
+                    <input type="text" class="form-control" id="description" name="description" value="<?php echo htmlspecialchars($_POST['description']); ?>" required>
+                </div>
+                    <div class="col-md-6">
+                    <label for="date_limite" class="form-label">Date limite</label>
+                    <input type="date" id="date_limite" name="date_limite" class="form-control" required>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="nombre_min" class="form-label">Nombre minimum de participants</label>
+                    <input type="number" id="nombre_min" name="nombre_min" class="form-control" min="1" required>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="prix_prevente" class="form-label">Prix pour la prévente</label>
+                    <div class="input-group">
+                        <span class="input-group-text">€</span>
+                        <input type="number" id="prix_prevente" name="prix_prevente" class="form-control" step="0.01" min="0" required>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="statut" class="form-label">Statut</label>
+                    <select id="statut" name="statut" class="form-select" required>
+                        <option value="en_attente">En attente</option>
+                        <option value="valide">Validé</option>
+                        <option value="annule">Annulé</option>
+                    </select>
+                </div>
+                <div class="col-12 d-flex justify-content-end gap-2 mt-2">
+                    <button type="submit" name="valider_prevente" class="btn btn-primary">Valider</button>
+                    <a href="menuVendeur.php" class="btn btn-secondary">Annuler</a>
+                </div>
+            </form>
+        </div>
     </div>
-    <div class="d-flex justify-content-center mt-2">
-        <a href="ajtPrevente.php" class="btn btn-warning">Ajouter en prévente</a>
-    </div>
+<?php else: ?>
+<?php endif; ?>
     <div class="d-flex justify-content-center mt-2">
         <a href="view_prevente.php" class="btn btn-primary">Voir les préventes</a>
+        <a href="ajtProduit.php" class="btn btn-success ms-2">Ajouter un produit</a>
     </div></div>
 </body>
 <footer class="bg-light text-center text-lg-start mt-auto">
@@ -129,4 +179,9 @@ if (isset($_POST['suppr_produit'])){
     array_pop($_POST);
     deleteProduit($_POST['id_produit']);
 }
+ if (isset($_POST['valider_prevente'])){
+    array_pop($_POST);
+    putPrevente($_POST);
+ }
+
 ?>

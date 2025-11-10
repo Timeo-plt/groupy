@@ -26,8 +26,7 @@
 </header>
 <body>
 <?php require('../fonctions/login_fonction.php'); 
-$preventes = getprevente();
-?>
+$preventes = getprevente();?>
 <table class="table table-striped table-hover table-bordered align-middle">
     <thead class="table-primary">
         <th class="text-center">date de fin</th>
@@ -38,15 +37,13 @@ $preventes = getprevente();
     </thead>
     <tbody>
 <?php foreach($preventes as $prevente): ?>
-<?php $prodP =  produit_prevente();
-foreach($prodP as $pp): ?>
     <tr>
         <td class="text-center"><?php echo htmlspecialchars($prevente['date_limite']); ?></td>
         <td class="text-center"><?php echo htmlspecialchars($prevente['nombre_min']); ?></td>
         <td class="text-center"><?php echo htmlspecialchars($prevente['statut']); ?></td>
         <td class="text-center"><?php echo htmlspecialchars($prevente['prix_prevente']); ?> €</td>
-        <td class="text-center"><?php echo htmlspecialchars($pp['description']); ?></td>
-<?php endforeach; ?>
+        <td class="text-center"><?php echo htmlspecialchars($prevente['description']); ?></td>
+    </tr>
 <?php endforeach; ?>
   </tr>
 </tbody>

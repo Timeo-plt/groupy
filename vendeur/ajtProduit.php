@@ -50,6 +50,10 @@ require_once('../fonctions/login_fonction.php');
 </body>
 </html>
 <?php
+// if(isset($_FILES['image'])){
+//     $files = $_FILES['image'];
+//     uploadPic($files);
+// }
 if(isset($_POST['submit'])){
     array_pop($_POST);
     ajout_produit($_POST);

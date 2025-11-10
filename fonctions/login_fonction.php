@@ -367,15 +367,6 @@ function ajout_produit($data){
 	if(!$pdo){
 		return false;
 	}
-	// $categorie = getCategorie();
-	// if (!empty($categorie) && isset($categorie[0]['id_categorie'])) {
-	// 	$idCategorie = $categorie[0]['id_categorie'];
-	// } else {
-	// 	echo "Aucune catégorie trouvée";
-	// 	return false;
-	// }
-	// var_dump($idCategorie);
-
 	$iduser = $_SESSION['connectedUser']['id_user'];
 
 	$req = "INSERT INTO produit (id_categorie, description, prix, image, id_vendeur) VALUES (?,?,?,?,?)";
@@ -415,6 +406,25 @@ function getProduit(){
 	}
 }
 
+function produitOnly() {
+		$pdo=connectDB();
+	if(!$pdo){
+		return false;
+	}
+	$req = "SELECT produit.id_produit, id_categorie, produit.description, prix, image, id_vendeur FROM produit LEFT JOIN prevente  ON prevente.id_produit = produit.id_produit WHERE prevente.id_produit IS NULL;"; 
+	$stmt = $pdo->prepare($req);
+	$result = $stmt->execute();
+	if(!$result){
+		deconnectDB($pdo);
+		return false;
+	}
+	else{
+		$onlyProduits = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		deconnectDB($pdo);
+		return $onlyProduits;
+
+	}
+}
 function UpdateVendeur($data){
 	$pdo=connectDB();	
 	if(!$pdo){
@@ -520,21 +530,23 @@ function getUtilisateur(){
 	}
 }
 
-function putPrevente($data, $produits){
+function putPrevente($data){
 	
 	$pdo =connectDB();
 	if(!$pdo){
 		return false;
 	}
-	$req = "INSERT INTO prevente (date_limite, nombre_min, statut, prix_prevente,id_produit) VALUES (?,?,?,?,?)";
+
+	$req = "INSERT INTO prevente (date_limite, nombre_min, statut, prix_prevente,id_produit,description) VALUES (?,?,?,?,?,?)";
 	$stmt = $pdo->prepare($req);
 	$params = [
 		$data['date_limite'],
 		$data['nombre_min'],
 		$data['statut'],
 		$data['prix_prevente'],
-		$produits,
-	];	
+		$data['id_produit'],
+		$data['description'],
+	];
 	$result = $stmt->execute($params);
 	if($result){
 		deconnectDB($pdo);
@@ -561,12 +573,57 @@ function getprevente()  {
 		return $preventes;
 	}
 }
-function produit_prevente(){
-	$pdo = connectDB();
+
+function uploadPic(array $file): string|false {
+	$allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+	$allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+	$maxSize = 500000;
+	$uploadDir = 'uploads/';
+
+	if (!is_dir($uploadDir)) {
+		mkdir($uploadDir, 0755, true);
+	}
+
+	if (!isset($file['tmp_name']) || !is_uploaded_file($file['tmp_name'])) {
+		echo "Aucun fichier valide n'a été téléchargé.";
+		return false;
+	}
+
+	$imageInfo = getimagesize($file['tmp_name']);
+	if ($imageInfo === false) {
+		echo "Le fichier n'est pas une image valide.";
+		return false;
+	}
+
+	$mimeType = $imageInfo['mime'];
+	$extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+	if (!in_array($mimeType, $allowedTypes) || !in_array($extension, $allowedExtensions)) {
+		echo "Type de fichier non autorisé. Formats acceptés : JPG, JPEG, PNG, GIF.";
+		return false;
+	}
+
+	if ($file['size'] > $maxSize) {
+		echo "Fichier trop volumineux. Taille maximale : 500 Ko.";
+		return false;
+	}
+
+	$filename = uniqid('img_', true) . '.' . $extension;
+	$targetFile = $uploadDir . $filename;
+
+	if (move_uploaded_file($file['tmp_name'], $targetFile)) {
+		return $targetFile;
+	} else {
+		echo "Erreur lors du téléchargement de l'image.";
+		return false;
+	}
+}
+function preventClient(){
+	$pdo=connectDB();
 	if(!$pdo){
 		return false;
 	}
-	$req = "SELECT description FROM produit JOIN prevente ON produit.id_produit = prevente.id_produit";
+	$req = "SELECT  produit.*, prevente.* FROM    produit AS produit JOIN    prevente AS prevente ON    prevente.id_produit = produit.id_produit";
 	$stmt = $pdo->prepare($req);
 	$result = $stmt->execute();
 	if(!$result){
@@ -574,9 +631,10 @@ function produit_prevente(){
 		return false;
 	}
 	else{
-		$prodP = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		$preventeclient = $stmt->fetchAll(PDO::FETCH_ASSOC);
 		deconnectDB($pdo);
-		return $prodP;
+		return $preventeclient;
 	}
 }
-?>
+
+?>	

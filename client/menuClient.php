@@ -24,15 +24,19 @@
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
 <?php
 require('../fonctions/login_fonction.php');
-if($produits = getProduit()){
-    foreach($produits as $produit){
+
+if($preventeClient = preventClient()){
+    foreach($preventeClient as $produit){
         echo "<div class='col'>
                 <div class='card h-100'>
                     <div class='card-body'>
                         <h5 class='card-title'>".$produit['image']."</h5>
-                        <p class='card-text'>".$produit['description']."</p>    
+                        <p class='card-text'>".$produit['description']."</p>   
                         <p class='card-text fw-bold'>Prix: ".$produit['prix']."</p>
+                        <p class='card-text fw-bold'>Prix de la prevente : ".$produit['prix_prevente']."</p>
+                        <p class='card-text fw-bold'>Statut de la prevente : ".$produit['statut']."</p>
                         <a href='#' class='btn btn-primary'>Participer</a>
+                        <a href='#' class='btn btn-danger'>signaler</a>
                     </div>
                 </div>
             </div>
@@ -45,6 +49,5 @@ if($produits = getProduit()){
     <div class="text-center p-3">
         © <?php echo date("Y"); ?> Groupe Vente. Tous droits réservés.
     </div>
-</footer>
 </footer>
 </html>
