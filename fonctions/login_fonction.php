@@ -637,4 +637,23 @@ function preventClient(){
 	}
 }
 
-?>	
+function participation ($data){
+	$pdo = connectDB();
+	if(!$pdo){
+		return false;
+	}
+	$req = "INSERT INTO participation (id_client, id_prevente) VALUES (?,?)";
+	$stmt = $pdo->prepare($req);
+	$params = [
+		$data['id_client'],
+		$data['id_prevente'],
+	];
+	$result = $stmt->execute($params);
+	if($result){
+		deconnectDB($pdo);
+		return true;
+	}
+	deconnectDB($pdo);
+	return false;
+}
+?>

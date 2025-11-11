@@ -25,6 +25,7 @@
 <?php
 require('../fonctions/login_fonction.php');
 
+
 if($preventeClient = preventClient()){
     foreach($preventeClient as $produit){
         echo "<div class='col'>
@@ -35,7 +36,11 @@ if($preventeClient = preventClient()){
                         <p class='card-text fw-bold'>Prix: ".$produit['prix']."</p>
                         <p class='card-text fw-bold'>Prix de la prevente : ".$produit['prix_prevente']."</p>
                         <p class='card-text fw-bold'>Statut de la prevente : ".$produit['statut']."</p>
-                        <a href='#' class='btn btn-primary'>Participer</a>
+                        <form method='POST' action=''>
+                        <input type='hidden' name='id_client' value='".$_SESSION['connectedUser']['id_user']."'>
+                        <input type='hidden' name='id_prevente' value='".$produit['id_prevente']."'>
+                        <button type='submit' name='participer' class='btn btn-primary'>Participer</button>
+                        </form>
                         <a href='#' class='btn btn-danger'>signaler</a>
                     </div>
                 </div>
@@ -51,3 +56,10 @@ if($preventeClient = preventClient()){
     </div>
 </footer>
 </html>
+<?php
+if(isset($_POST['participer'])){
+    array_pop($_POST);
+    participation($_POST);
+    header('Location: menuClient.php');
+}
+?>
