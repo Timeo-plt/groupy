@@ -41,12 +41,32 @@ if($preventeClient = preventClient()){
                         <input type='hidden' name='id_prevente' value='".$produit['id_prevente']."'>
                         <button type='submit' name='participer' class='btn btn-primary'>Participer</button>
                         </form>
-                        <a href='#' class='btn btn-danger'>signaler</a>
+                        <form method='POST' action='' name='signaler'>
+                        <input type='hidden' name='id_client' value='".$_SESSION['connectedUser']['id_user']."'>
+                        <input type='hidden' name='id_prevente' value='".$produit['id_produit']."'>
+                        <button type='submit' name='signaler' class='btn btn-danger'>Signaler</button>
+                        </form>
                     </div>
-                </div>
+                </div>   
             </div>
         ";
     }
+}
+?>
+<?php if (isset($_POST['signaler'])){
+    echo"                
+    <form method='POST' action='' class='card p-3 bg-light shadow-sm' style='max-width:600px; margin:auto;'>
+    <input type='hidden' name='id_user' value='".$_SESSION['connectedUser']['id_user']."'>
+    <input type='hidden' name='id_produit' value='".$produit['id_produit']."'>
+    <div class='mb-3'>
+        <label for='date_signalement' class='form-label'>Date du signalement</label>
+        <input type='date' id='date_signalement' name='date_signal' class='form-control' required>
+    </div>
+    <div class='d-flex justify-content-end gap-2'>
+        <button type='submit' name='confirmer_signalement' class='btn btn-primary'>Confirmer</button>
+        <button type='submit' name='annuler_signalement' class='btn btn-secondary'>Annuler</button>
+    </div>
+    </form>";
 }
 ?>
 </body>
@@ -61,5 +81,9 @@ if(isset($_POST['participer'])){
     array_pop($_POST);
     participation($_POST);
     header('Location: menuClient.php');
+}
+if(isset($_POST['confirmer_signalement'])){
+    array_pop($_POST);
+    signaler($_POST);
 }
 ?>

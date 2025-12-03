@@ -29,8 +29,23 @@
 $produits = getProduit();
 $prevente = getprevente();
 $onlyProduits = produitOnly();
+$_SESSION['connectedUser']['id_user'];
 ?>
-
+<?php if (isblocked($_SESSION['connectedUser']['id_user'])): ?>
+    <div class="alert alert-danger" role="alert">
+        Votre compte est bloqué. Vous ne pouvez pas gérer les produits.
+    </div>
+    <div>
+        <form action="" method="post">
+            <div class="mb-3">
+                <label for="litige" class="form-label">Litige: </label>
+                <textarea id="litige" name="litige" class="form-control" rows="4" placeholder="Expliquez la raison de votre litige..." required></textarea>
+            </div>
+            <br>
+            <button type="submit" name="envoyer_litige" class="btn btn-primary">Envoyer</button>
+        </form>
+    </div>
+<?php else: ?>
 <table class="table table-striped table-hover">
     <thead>
         <tr>
@@ -185,3 +200,4 @@ if (isset($_POST['suppr_produit'])){
  }
 
 ?>
+<?php endif; ?>

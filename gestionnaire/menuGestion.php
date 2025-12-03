@@ -26,52 +26,31 @@
   </div>
 </nav>
 <body>
-  <div class="d-flex justify-content-center my-4">
-    <a href="ajtCategorie.php" class="btn btn-primary">Ajouter une catégorie</a>
-  </div>
-<?php  require('../fonctions/login_fonction.php');
-array_pop($_POST);
-$user = getUtilisateur();
+  <?php 
 ?>
 
-
-    <div class="container my-5">
-      <h2 class="text-center mb-4">Liste des utilisateurs</h2>
-      <div class="table-responsive">
-        <table class="table table-striped table-hover align-middle">
-          <thead class="table-dark">
-            <tr>
-              <th>Nom</th>
-              <th>Prénom</th>
-              <th>Email</th>
-              <th>Téléphone</th>
-              <th>Adresse</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php if (!empty($user) && is_array($user)): ?>
-              <?php foreach ($user as $u): ?>
-                <tr>
-                  <td><?php echo htmlspecialchars($u['nom'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
-                  <td><?php echo htmlspecialchars($u['prenom'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
-                  <td><?php echo htmlspecialchars($u['email'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
-                  <td><?php echo htmlspecialchars($u['phone'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
-                  <td><?php echo htmlspecialchars($u['adresse'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
-                </tr>
-              <?php endforeach; ?>
-            <?php else: ?>
-              <tr>
-                <td colspan="5" class="text-center">Aucun utilisateur trouvé.</td>
-              </tr>
-            <?php endif; ?>
-          </tbody>
-        </table>
+<?php
+  require_once '../fonctions/login_fonction.php';
+  $vendeursAbloquer = signalBlocage();
+  foreach($vendeursAbloquer as $vendeur):
+    echo"
+    <div class='alert alert-warning d-flex justify-content-between align-items-center' role='alert'>
+      <div>
+        <strong>Attention!</strong> Le vendeur <strong>".$vendeur['id_vendeur']."</strong> a été signalé plusieurs fois.
       </div>
     </div>
-<?php ; ?>
-        </div>
-    </div>
- 
+    ";
+    
+  endforeach;
+  ?>
+  </div>
+  <div class="d-flex justify-content-center my-4">
+    <a href="ajtCategorie.php" class="btn" style="background-color:#001f3f; color:#fff; border-color:#001f3f;">Ajouter une catégorie</a>
+  </div>
+<div class="d-flex justify-content-center gap-2 my-3">
+  <a href="ViewVendeur.php" class="btn btn-dark btn-sm">Liste Vendeurs</a>
+  <a href="ViewClient.php" class="btn btn-light btn-sm border border-dark">Liste Clients</a>
+</div>
 </body>
 <footer>
     <div class="text-center p-3">

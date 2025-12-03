@@ -3,7 +3,7 @@ session_start();
 function connectDB(){
 	try
 	{
-		$pdo= new PDO("mysql: host=localhost; dbname=vente_groupe", "tse", "Street1-Grading3-Hydration9");
+		$pdo= new PDO("mysql: host=localhost; dbname=vente_groupy", "tse", "Street1-Grading3-Hydration9");
 
 		return $pdo;
 	}
@@ -112,6 +112,26 @@ function addClient($data){
 	}
 }
 
+function getclient(){
+	$pdo = connectDB();
+	if(!$pdo){
+		return false;
+	}
+	$req = "SELECT * FROM utilisateur JOIN client ON utilisateur.id_user = client.id_user";
+	$stmt = $pdo->prepare($req);
+	$result = $stmt->execute();
+	if(!$result){
+		deconnectDB($pdo);
+		return false;
+	}
+	else{
+		$clients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		deconnectDB($pdo);
+		return $clients;
+
+	}
+}
+
 function addVendeur($data){
 	$pdo=connectDB();
 	if(!$pdo){
@@ -158,6 +178,26 @@ function addVendeur($data){
 				return false;
 			}
 		}
+	}
+}
+
+function getvendeur(){
+	$pdo = connectDB();
+	if(!$pdo){
+		return false;
+	}
+	$req = "SELECT * FROM utilisateur JOIN vendeur ON utilisateur.id_user = vendeur.id_user"; 
+	$stmt = $pdo->prepare($req);
+	$result = $stmt->execute();
+	if(!$result){
+		deconnectDB($pdo);
+		return false;
+	}
+	else{
+		$vendeurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		deconnectDB($pdo);
+		return $vendeurs;
+
 	}
 }
 
@@ -276,7 +316,7 @@ function connectUser($data){
 		}
 }
 	
-	function disconnectUser(){
+function disconnectUser(){
 		session_unset();
 		session_destroy();
 		header('Location:register.php');
@@ -656,4 +696,143 @@ function participation ($data){
 	deconnectDB($pdo);
 	return false;
 }
-?>
+
+function signaler ($data){
+	$pdo = connectDB();
+	if(!$pdo){
+		return false;
+	}
+	$req = "INSERT INTO signaler (id_user, id_produit, date_signal) VALUES (?,?,?)";
+	$stmt = $pdo->prepare($req);
+	$params = [
+		$data['id_user'],
+		$data['id_produit'],
+		$data['date_signal'],
+	];
+	$result = $stmt->execute($params);
+	if($result){
+		deconnectDB($pdo);
+		return true;
+	}
+	deconnectDB($pdo); 
+	return false;
+}  
+
+function bloquerVendeur($data) {
+	$pdo = connectDB();
+	if(!$pdo){
+		return false;
+	}
+	$req = "INSERT INTO bloquer (id_gestionnaire, id_vendeur, date_blocage) VALUES (?,?,?)";
+	$stmt = $pdo->prepare($req);
+	$params = [
+		$data['id_gestionnaire'],
+		$data['id_vendeur'],
+		$data['date_blocage'],
+	];
+	$result = $stmt->execute($params);
+	if(!$result){
+		deconnectDB($pdo);
+		return false;
+	}
+	$REQ = "DELETE FROM debloquer WHERE id_vendeur = ?";
+	$stmt = $pdo->prepare($REQ);
+	$params = [
+		$data['id_vendeur'],
+	];
+	$result = $stmt->execute($params);
+	if (!$result){
+		deconnectDB($pdo);
+		return false;
+	}
+	deconnectDB($pdo);
+	return $result;
+}
+
+function isblocked($idVendeur){
+	$pdo=connectDB();
+	if(!$pdo){
+		return false;
+	}
+	$req = "SELECT * from bloquer where id_vendeur = ?";
+	$stmt = $pdo->prepare($req);
+	$stmt->execute([$idVendeur]);
+	$result = $stmt->fetch(PDO::FETCH_ASSOC);
+	if($result){
+		deconnectDB($pdo);
+		return true;
+	}
+	else{
+		deconnectDB($pdo);
+		return false;
+	}
+	
+	
+}
+
+function signalBlocage(){
+		$pdo=connectDB();
+	if(!$pdo){
+		return false;
+	}
+	$req = "SELECT DISTINCT t.id_vendeur
+FROM (
+    SELECT 
+        p.id_produit,
+        p.id_vendeur
+    FROM produit p
+    JOIN signaler s 
+        ON p.id_produit = s.id_produit
+    GROUP BY p.id_produit, p.id_vendeur
+    HAVING COUNT(DISTINCT s.id_user) > 0.5 * (SELECT COUNT(*) FROM client)
+) AS t
+LEFT JOIN bloquer b 
+    ON b.id_vendeur = t.id_vendeur
+LEFT JOIN debloquer d
+    ON d.id_vendeur = t.id_vendeur
+WHERE b.id_vendeur IS NULL
+  AND d.id_vendeur IS NULL
+";
+	$stmt = $pdo->prepare($req);
+	$result = $stmt->execute();
+	if(!$result){
+		deconnectDB($pdo);
+		return false;
+	}
+	else{
+		$vendeursAbloquer = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		deconnectDB($pdo);
+		return $vendeursAbloquer;
+
+	}
+}
+
+function deblocage($data){
+	$pdo = connectDB();
+	if(!$pdo){
+		return false;
+	}
+	$req = "DELETE FROM bloquer WHERE id_vendeur = ?";
+	$stmt = $pdo->prepare($req);
+	$params = [
+		$data['id_vendeur'],
+	];
+	$result = $stmt->execute($params);
+	if(!$result){
+		deconnectDB($pdo);
+		return false;
+	}
+	$REQ = "INSERT INTO debloquer (id_gestionnaire, id_vendeur, date_deblocage) VALUES (?,?,?)";
+	$stmt = $pdo->prepare($REQ);
+	$params = [
+		$data['id_gestionnaire'],
+		$data['id_vendeur'],
+		$data['date_deblocage'],
+	];
+	$result = $stmt->execute($params);
+	deconnectDB($pdo);
+	return $result;
+}
+	
+
+

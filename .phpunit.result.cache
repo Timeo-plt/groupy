@@ -1,0 +1,1 @@
+{"version":1,"defects":{"Auth::testUserExists":4,"Auth::testPassword":4},"times":{"testTest::testExample":0,"Auth::testUserExists":0.192,"Auth::testPassword":0.178,"testTest::testAnotherExample":0}}
