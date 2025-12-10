@@ -28,7 +28,6 @@ if($_SESSION['connectedUser']){
                         <h4>Profil Client</h4>
                     </div>
                     <div class="card-body text-center">
-                        <img src="https://via.placeholder.com/120" class="rounded-circle mb-3" alt="Photo de profil">
                         <h5 class='card-title'>Nom: <?php echo $nom?></h5>
                         <h5 class='card-title'>Prenom: <?php echo $prenom ?></h5>
                         <p class='card-title'>Adresse: <?php echo $adresse ?></p>
@@ -57,9 +56,6 @@ if($_SESSION['connectedUser']){
                 </div>
                 <div class="card-body">
                     <form action="#" method="post" name="save_client">
-                        <div class="mb-3 text-center">
-                            <img src="https://via.placeholder.com/120" class="rounded-circle mb-3" alt="Photo de profil">
-                        </div>
                         <div class="mb-3">
                             <label for="nom" class="form-label">Nom</label>
                             <input type="text" class="form-control" id="nom" name="nom" value="<?php echo htmlspecialchars($nom); ?>" required>

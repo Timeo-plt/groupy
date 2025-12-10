@@ -34,7 +34,6 @@ if($_SESSION['connectedVendeur']){
                         <h4>Profil Vendeur</h4>
                     </div>
                     <div class="card-body text-center">
-                        <img src="https://via.placeholder.com/120" class="rounded-circle mb-3" alt="Photo de profil">
                         <h5 class='card-title'>Nom: <?php echo $nom?></h5>
                         <h5 class='card-title'>Prenom: <?php echo $prenom ?></h5>
                         <p class='card-title'>Adresse: <?php echo $adresse ?></p>

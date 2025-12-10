@@ -614,50 +614,6 @@ function getprevente()  {
 	}
 }
 
-function uploadPic(array $file): string|false {
-	$allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-	$allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
-	$maxSize = 500000;
-	$uploadDir = 'uploads/';
-
-	if (!is_dir($uploadDir)) {
-		mkdir($uploadDir, 0755, true);
-	}
-
-	if (!isset($file['tmp_name']) || !is_uploaded_file($file['tmp_name'])) {
-		echo "Aucun fichier valide n'a été téléchargé.";
-		return false;
-	}
-
-	$imageInfo = getimagesize($file['tmp_name']);
-	if ($imageInfo === false) {
-		echo "Le fichier n'est pas une image valide.";
-		return false;
-	}
-
-	$mimeType = $imageInfo['mime'];
-	$extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-
-	if (!in_array($mimeType, $allowedTypes) || !in_array($extension, $allowedExtensions)) {
-		echo "Type de fichier non autorisé. Formats acceptés : JPG, JPEG, PNG, GIF.";
-		return false;
-	}
-
-	if ($file['size'] > $maxSize) {
-		echo "Fichier trop volumineux. Taille maximale : 500 Ko.";
-		return false;
-	}
-
-	$filename = uniqid('img_', true) . '.' . $extension;
-	$targetFile = $uploadDir . $filename;
-
-	if (move_uploaded_file($file['tmp_name'], $targetFile)) {
-		return $targetFile;
-	} else {
-		echo "Erreur lors du téléchargement de l'image.";
-		return false;
-	}
-}
 function preventClient(){
 	$pdo=connectDB();
 	if(!$pdo){
@@ -677,26 +633,42 @@ function preventClient(){
 	}
 }
 
-function participation ($data){
-	$pdo = connectDB();
-	if(!$pdo){
-		return false;
-	}
-	$req = "INSERT INTO participation (id_client, id_prevente) VALUES (?,?)";
-	$stmt = $pdo->prepare($req);
-	$params = [
-		$data['id_client'],
-		$data['id_prevente'],
-	];
-	$result = $stmt->execute($params);
-	if($result){
-		deconnectDB($pdo);
-		return true;
-	}
-	deconnectDB($pdo);
-	return false;
+function participation($data) {
+    $pdo = connectDB();
+    if (!$pdo) {
+        return false;
+    }
+    
+    try {
+        $req = "INSERT INTO participation (id_client, id_prevente) VALUES (?,?)";
+        $stmt = $pdo->prepare($req);
+        $params = [
+            $data['id_client'],
+            $data['id_prevente'],
+        ];
+        $result = $stmt->execute($params);
+        
+        if ($result) {
+            $idParticipation = $pdo->lastInsertId();
+            deconnectDB($pdo);
+            
+            $invoiceResult = generateAndSaveInvoice(
+                $data['id_client'], 
+                $data['id_prevente'],
+                $idParticipation
+            );
+            
+            return true;
+        }
+        
+        deconnectDB($pdo);
+        return false;
+        
+    } catch (PDOException $e) {
+        deconnectDB($pdo);
+        return false;
+    }
 }
-
 function signaler ($data){
 	$pdo = connectDB();
 	if(!$pdo){
@@ -833,6 +805,376 @@ function deblocage($data){
 	deconnectDB($pdo);
 	return $result;
 }
-	
+
+function uploadPic($file) {
+    // Vérifier que le fichier est valide
+    if (!isset($file['tmp_name']) || !is_uploaded_file($file['tmp_name'])) {
+        return false;
+    }
+    
+    // Créer le dossier s'il n'existe pas
+    $uploadDir = 'uploads/';
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0755, true);
+    }
+    
+    // Vérifier que c'est bien une image
+    $imageInfo = @getimagesize($file['tmp_name']);
+    if ($imageInfo === false) {
+        return false;
+    }
+    
+    // Valider l'extension et le type MIME
+    $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+    $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    
+    $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    $mimeType = $imageInfo['mime'];
+    
+    if (!in_array($extension, $allowedExtensions) || !in_array($mimeType, $allowedMimeTypes)) {
+        return false;
+    }
+    
+    // Vérifier la taille (5MB max)
+    if ($file['size'] > 5000000) {
+        return false;
+    }
+    
+    // Générer un nom unique et déplacer le fichier
+    $uniqueName = uniqid('img_', true) . '.' . $extension;
+    $targetFile = $uploadDir . $uniqueName;
+    
+    if (move_uploaded_file($file['tmp_name'], $targetFile)) {
+        return $targetFile;
+    }
+    
+    return false;
+}
+function generateInvoiceNumber() {
+    $year = date('Y');
+    $random = str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+    return "FACT-{$year}-{$random}";
+}
+//  * Génère et sauvegarde une facture lors de la participation à une prévente
+//  * Cette fonction est appelée automatiquement après l'insertion dans la table participation
+
+function generateAndSaveInvoice($idClient, $idPrevente, $idParticipation) {
+    $pdo = connectDB();
+    if (!$pdo) {
+        return false;
+    }
+    
+    try {
+        // Récupérer les informations du client
+        $reqClient = "SELECT u.nom, u.prenom, u.email, u.adresse, u.phone 
+                      FROM utilisateur u 
+                      JOIN client c ON u.id_user = c.id_user 
+                      WHERE c.id_user = ?";
+        $stmtClient = $pdo->prepare($reqClient);
+        $stmtClient->execute([$idClient]);
+        $client = $stmtClient->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$client) {
+            deconnectDB($pdo);
+            return false;
+        }
+        
+        // Récupérer les informations de la prévente et du produit
+        $reqPrevente = "SELECT pr.*, p.description as produit_desc, p.image, p.prix as prix_normal,
+                        v.nom_entreprise, v.siret, v.adresse_entreprise, v.email_pro
+                        FROM prevente pr
+                        JOIN produit p ON pr.id_produit = p.id_produit
+                        JOIN vendeur v ON p.id_vendeur = v.id_user
+                        WHERE pr.id_prevente = ?";
+        $stmtPrevente = $pdo->prepare($reqPrevente);
+        $stmtPrevente->execute([$idPrevente]);
+        $prevente = $stmtPrevente->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$prevente) {
+            deconnectDB($pdo);
+            return false;
+        }
+        
+        // Générer le numéro de facture
+        $invoiceNumber = generateInvoiceNumber();
+        $invoiceDate = date('d/m/Y');
+        
+        // Calculs
+        $quantity = 1;
+        $unitPrice = floatval($prevente['prix_prevente']);
+        $totalHT = $quantity * $unitPrice;
+        $tva = $totalHT * 0.20;
+        $totalTTC = $totalHT + $tva;
+        
+        // Générer le HTML de la facture
+        $html = generateInvoiceHTML($client, $prevente, $invoiceNumber, $invoiceDate, $quantity, $unitPrice, $totalHT, $tva, $totalTTC);
+        
+        // Créer le dossier factures s'il n'existe pas
+        $facturesDir = __DIR__ . '/../factures/';
+        if (!file_exists($facturesDir)) {
+            mkdir($facturesDir, 0755, true);
+        }
+        
+        // Sauvegarder la facture
+        $filename = 'Facture_' . $invoiceNumber . '.html';
+        $filepath = $facturesDir . $filename;
+        file_put_contents($filepath, $html);
+        
+        // Enregistrer la facture dans la base de données
+        $reqFacture = "INSERT INTO facture (date_facture, pdf_facture) VALUES (?, ?)";
+        $stmtFacture = $pdo->prepare($reqFacture);
+        $stmtFacture->execute([date('Y-m-d'), $filename]);
+        $idFacture = $pdo->lastInsertId();
+        
+        // Mettre à jour la participation avec l'id de la facture
+        $reqUpdate = "UPDATE participation SET id_facture = ? WHERE id_particiption = ?";
+        $stmtUpdate = $pdo->prepare($reqUpdate);
+        $stmtUpdate->execute([$idFacture, $idParticipation]);
+        
+        deconnectDB($pdo);
+        
+        // Retourner le chemin de la facture pour téléchargement
+        return [
+            'success' => true,
+            'invoice_number' => $invoiceNumber,
+            'filepath' => $filepath,
+            'filename' => $filename
+        ];
+        
+    } catch (PDOException $e) {
+        echo "Erreur génération facture : " . $e->getMessage();
+        deconnectDB($pdo);
+        return false;
+    }
+}
+// * Génère le HTML de la facture
+//  */
+function generateInvoiceHTML($client, $prevente, $invoiceNumber, $invoiceDate, $quantity, $unitPrice, $totalHT, $tva, $totalTTC) {
+    
+    $html = '<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>Facture ' . htmlspecialchars($invoiceNumber) . '</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            color: #333;
+            background: white;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #2563eb;
+        }
+        .company-info { font-size: 14px; }
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+        .invoice-info { text-align: right; }
+        .invoice-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2563eb;
+        }
+        .buyer-info {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f3f4f6;
+            border-radius: 8px;
+        }
+        .buyer-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+        }
+        th {
+            background: #2563eb;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .totals {
+            margin-top: 30px;
+            float: right;
+            width: 350px;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .total-row.final {
+            background: #2563eb;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: none;
+        }
+        .footer {
+            clear: both;
+            margin-top: 80px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+            font-size: 12px;
+            color: #6b7280;
+            text-align: center;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #10b981;
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="company-info">
+            <div class="company-name">' . htmlspecialchars($prevente['nom_entreprise']) . '</div>
+            <div>' . htmlspecialchars($prevente['adresse_entreprise']) . '</div>
+            <div>SIRET: ' . htmlspecialchars($prevente['siret']) . '</div>
+            <div>Email: ' . htmlspecialchars($prevente['email_pro']) . '</div>
+        </div>
+        <div class="invoice-info">
+            <div class="invoice-title">FACTURE</div>
+            <div style="font-size: 16px; margin-top: 10px;">' . htmlspecialchars($invoiceNumber) . '</div>
+            <div style="margin-top: 10px;">Date: ' . $invoiceDate . '</div>
+            <div style="margin-top: 5px;"><span class="badge">PRÉVENTE</span></div>
+        </div>
+    </div>
+
+    <div class="buyer-info">
+        <div class="buyer-title">Facturé à:</div>
+        <div><strong>' . htmlspecialchars($client['nom'] . ' ' . $client['prenom']) . '</strong></div>
+        <div>' . htmlspecialchars($client['adresse']) . '</div>
+        <div>Tél: ' . htmlspecialchars($client['phone']) . '</div>
+        <div>Email: ' . htmlspecialchars($client['email']) . '</div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th style="text-align: center; width: 100px;">Quantité</th>
+                <th style="text-align: right; width: 120px;">Prix unitaire</th>
+                <th style="text-align: right; width: 120px;">Total HT</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <strong>' . htmlspecialchars($prevente['description']) . '</strong><br>
+                    <em style="color: #6b7280;">' . htmlspecialchars($prevente['produit_desc']) . '</em><br>
+                    <small style="color: #10b981;">Prix prévente (économie de ' . number_format($prevente['prix_normal'] - $unitPrice, 2, ',', ' ') . ' €)</small>
+                </td>
+                <td style="text-align: center;">' . $quantity . '</td>
+                <td style="text-align: right;">' . number_format($unitPrice, 2, ',', ' ') . ' €</td>
+                <td style="text-align: right;"><strong>' . number_format($totalHT, 2, ',', ' ') . ' €</strong></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <div class="total-row">
+            <span>Sous-total HT:</span>
+            <span>' . number_format($totalHT, 2, ',', ' ') . ' €</span>
+        </div>
+        <div class="total-row">
+            <span>TVA (20%):</span>
+            <span>' . number_format($tva, 2, ',', ' ') . ' €</span>
+        </div>
+        <div class="total-row final">
+            <span>Total TTC:</span>
+            <span>' . number_format($totalTTC, 2, ',', ' ') . ' €</span>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p><strong>Merci pour votre participation à cette prévente !</strong></p>
+        <p style="margin-top: 10px;">Date limite de la prévente: ' . date('d/m/Y', strtotime($prevente['date_limite'])) . '</p>
+        <p>Nombre minimum de participants: ' . $prevente['nombre_min'] . ' | Statut: ' . htmlspecialchars($prevente['statut']) . '</p>
+        <p style="margin-top: 15px;">Conditions de paiement: Paiement à réception</p>
+        <p>En cas de question, contactez-nous à ' . htmlspecialchars($prevente['email_pro']) . '</p>
+    </div>
+</body>
+</html>';
+    
+    return $html;
+}
+/**
+ * Déclenche le téléchargement automatique de la facture
+ */
+function downloadInvoice($filepath, $filename) {
+    if (file_exists($filepath)) {
+        // Définir les headers pour forcer le téléchargement
+        header('Content-Type: text/html');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Content-Length: ' . filesize($filepath));
+        header('Cache-Control: private, max-age=0, must-revalidate');
+        header('Pragma: public');
+        
+        // Vider le buffer de sortie
+        ob_clean();
+        flush();
+        
+        // Lire et envoyer le fichier
+        readfile($filepath);
+        exit;
+    }
+}
+/**
+ * Récupérer les factures d'un client avec les infos de prévente
+ */
+function getClientInvoices($idClient) {
+    $pdo = connectDB();
+    if (!$pdo) {
+        return false;
+    }
+    
+    $req = "SELECT f.*, pa.created_at as date_participation, pr.description as prevente_desc,
+            pr.prix_prevente, p.prix as prix_normal
+            FROM facture f
+            JOIN participation pa ON f.id_facture = pa.id_facture
+            JOIN prevente pr ON pa.id_prevente = pr.id_prevente
+            JOIN produit p ON pr.id_produit = p.id_produit
+            WHERE pa.id_client = ?
+            ORDER BY f.date_facture DESC";
+    
+    $stmt = $pdo->prepare($req);
+    $stmt->execute([$idClient]);
+    $factures = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    deconnectDB($pdo);
+    return $factures;
+}
+
+
+
+
+?>
 
 

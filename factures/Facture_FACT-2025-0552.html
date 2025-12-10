@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>Facture FACT-2025-0552</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            color: #333;
+            background: white;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #2563eb;
+        }
+        .company-info { font-size: 14px; }
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+        .invoice-info { text-align: right; }
+        .invoice-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2563eb;
+        }
+        .buyer-info {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f3f4f6;
+            border-radius: 8px;
+        }
+        .buyer-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+        }
+        th {
+            background: #2563eb;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .totals {
+            margin-top: 30px;
+            float: right;
+            width: 350px;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .total-row.final {
+            background: #2563eb;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: none;
+        }
+        .footer {
+            clear: both;
+            margin-top: 80px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+            font-size: 12px;
+            color: #6b7280;
+            text-align: center;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #10b981;
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="company-info">
+            <div class="company-name">vendeur</div>
+            <div>vendeur</div>
+            <div>SIRET: 78788889890</div>
+            <div>Email: vedeur@pro</div>
+        </div>
+        <div class="invoice-info">
+            <div class="invoice-title">FACTURE</div>
+            <div style="font-size: 16px; margin-top: 10px;">FACT-2025-0552</div>
+            <div style="margin-top: 10px;">Date: 09/12/2025</div>
+            <div style="margin-top: 5px;"><span class="badge">PRÉVENTE</span></div>
+        </div>
+    </div>
+
+    <div class="buyer-info">
+        <div class="buyer-title">Facturé à:</div>
+        <div><strong>client client</strong></div>
+        <div>client</div>
+        <div>Tél: 67</div>
+        <div>Email: client@client</div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th style="text-align: center; width: 100px;">Quantité</th>
+                <th style="text-align: right; width: 120px;">Prix unitaire</th>
+                <th style="text-align: right; width: 120px;">Total HT</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <strong>Celineee</strong><br>
+                    <em style="color: #6b7280;">Celineee</em><br>
+                    <small style="color: #10b981;">Prix prévente (économie de 19 999,62 €)</small>
+                </td>
+                <td style="text-align: center;">1</td>
+                <td style="text-align: right;">0,38 €</td>
+                <td style="text-align: right;"><strong>0,38 €</strong></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <div class="total-row">
+            <span>Sous-total HT:</span>
+            <span>0,38 €</span>
+        </div>
+        <div class="total-row">
+            <span>TVA (20%):</span>
+            <span>0,08 €</span>
+        </div>
+        <div class="total-row final">
+            <span>Total TTC:</span>
+            <span>0,46 €</span>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p><strong>Merci pour votre participation à cette prévente !</strong></p>
+        <p style="margin-top: 10px;">Date limite de la prévente: 15/11/2025</p>
+        <p>Nombre minimum de participants: 10 | Statut: en_attente</p>
+        <p style="margin-top: 15px;">Conditions de paiement: Paiement à réception</p>
+        <p>En cas de question, contactez-nous à vedeur@pro</p>
+    </div>
+</body>
+</html>
