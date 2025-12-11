@@ -34,6 +34,7 @@ $preventes = getprevente();?>
         <th class="text-center">statut</th>
         <th class="text-center">prix à la prevente</th>
         <th class="text-center">produits</th>
+        <th class="text-center">Actions</th>
     </thead>
     <tbody>
 <?php foreach($preventes as $prevente): ?>
@@ -43,6 +44,12 @@ $preventes = getprevente();?>
         <td class="text-center"><?php echo htmlspecialchars($prevente['statut']); ?></td>
         <td class="text-center"><?php echo htmlspecialchars($prevente['prix_prevente']); ?> €</td>
         <td class="text-center"><?php echo htmlspecialchars($prevente['description']); ?></td>
+        <td class="text-center">
+            <form method="post" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette prévente ?');">
+                <input type="hidden" name="id_prevente" value="<?php echo htmlspecialchars($prevente['id_prevente']); ?>">
+                <button type="submit" name="supprimer" class="btn btn-danger btn-sm">Supprimer</button>
+            </form>
+        </td>
     </tr>
 <?php endforeach; ?>
   </tr>
@@ -50,3 +57,9 @@ $preventes = getprevente();?>
 </table>
 </body>
 </html>
+<?php
+if(isset($_POST['supprimer'])){
+    $id_prevente = $_POST['id_prevente'];
+    deleteprevente($id_prevente);
+    exit();
+}

@@ -8,6 +8,15 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 <?php
 require_once('../fonctions/login_fonction.php');
+if(isset($_POST['submit'])){
+    $imagePath = uploadPic($_FILES['image']);
+    $_POST['image'] = $imagePath;
+    unset($_POST['submit']);
+    ajout_produit($_POST);
+    var_dump($_POST);
+    header('Location: menuVendeur.php');
+    exit();
+}
 ?>
 </head>
 <body>
@@ -36,8 +45,11 @@ require_once('../fonctions/login_fonction.php');
             <input type="text" class="form-control" id="prix" name="prix" placeholder="Prix du produit">
             </div>
             <div class="col-md-6">
+            <input type="hidden" name="id_vendeur" value="<?php echo $_SESSION['connectedVendeur']['id_user']; ?>">
+            </div>
+            <div class="col-md-6">
             <label for="image" class="form-label">Image</label>
-            <input type="text" class="form-control" id="image" name="image">
+            <input type="file" class="form-control" id="image" name="image">
             </div>
             <div class="col-12">
             <button type="submit" name="submit" class="btn btn-primary btn-sm">Ajouter</button>
@@ -49,13 +61,3 @@ require_once('../fonctions/login_fonction.php');
     </div>
 </body>
 </html>
-<?php
-// if(isset($_FILES['image'])){
-//     $files = $_FILES['image'];
-//     uploadPic($files);
-// }
-if(isset($_POST['submit'])){
-    array_pop($_POST);
-    ajout_produit($_POST);
-}
-?>

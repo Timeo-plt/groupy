@@ -7,10 +7,25 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <i class="bi bi-sign-turn-slight-right-fill"></i>
+       <style>
+        .product-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        table td {
+            vertical-align: middle;
+        }
+    </style>
 </head>
 
+ 
 
-<header>
+<body>
+    <header>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">PageVendeur</a>
@@ -21,7 +36,6 @@
         </div>
     </nav>
 </header>
-<body>
     <div class="text-center mt-4">
         <h4>Produits</h4>
 
@@ -61,7 +75,11 @@ $_SESSION['connectedUser']['id_user'];
 
             <?php foreach ($onlyProduits as $onlyProduit): ?>
                 <tr>
-                    <td><?php echo htmlspecialchars($onlyProduit['image']); ?></td>
+                    <td>
+                        <img src="<?php echo htmlspecialchars($onlyProduit['image']); ?>" 
+                            alt="Produit"
+                            class="product-image">
+                    </td>
                     <td><?php echo htmlspecialchars($onlyProduit['description']); ?></td>
                     <td><?php echo htmlspecialchars($onlyProduit['prix']); ?> €</td>
                     <td class="text-end">

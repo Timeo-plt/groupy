@@ -402,30 +402,23 @@ function getCategorie(){
 
 
 }
-function ajout_produit($data){
-	$pdo = connectDB();
+function ajout_produit($data) {
+	$pdo=connectDB();
 	if(!$pdo){
 		return false;
 	}
-	$iduser = $_SESSION['connectedUser']['id_user'];
-
-	$req = "INSERT INTO produit (id_categorie, description, prix, image, id_vendeur) VALUES (?,?,?,?,?)";
-	$stmt = $pdo->prepare($req);
-	$params = [
-		$data['libelle'],
-		$data['description'],
-		$data['prix'],
-		$data['image'],
-		$iduser
-	];
-	$result = $stmt->execute($params);
-	if($result){
-		deconnectDB($pdo);
-		header('Location: menuVendeur.php');
-		return true;
-	}
+    $sql = "INSERT INTO produit (id_categorie, description, prix, image, id_vendeur) 
+            VALUES (:libelle, :description, :prix, :image, :id_vendeur)";
+    
+    $stmt = $pdo->prepare($sql);
+    return $stmt->execute([
+		'libelle' => $data['libelle'],
+        'description' => $data['description'],
+        'prix' => $data['prix'],
+        'image' => $data['image'],  
+        'id_vendeur' => $data['id_vendeur'],
+    ]);
 }
-
 function getProduit(){
 	$pdo=connectDB();
 	if(!$pdo){
@@ -542,13 +535,21 @@ function deleteProduit($idproduit){
 		deconnectDB($pdo);
 		return false;
 	}
-	$req = "DELETE FROM produit WHERE id_produit = $idproduit";
+	$REQ = "DELETE FROM signaler WHERE id_produit = ?";
+	$stmt = $pdo->prepare($REQ);
+	$result = $stmt->execute([$idproduit]);
+	if(!$result){
+		deconnectDB($pdo);
+		return false;
+	}
+	$req = "DELETE FROM produit WHERE id_produit = ?";
 	$stmt = $pdo->prepare($req);
-	$result = $stmt->execute();
+	$result = $stmt->execute([$idproduit]);
 	if($result){
 		deconnectDB($pdo);
 		return true;
 	}
+
 }
 
 function getUtilisateur(){
@@ -600,7 +601,7 @@ function getprevente()  {
 	if(!$pdo){
 		return false;
 	}
-	$req = "SELECT * FROM prevente";
+	$req = "SELECT prevente.* , produit.image FROM prevente JOIN produit ON prevente.id_produit = produit.id_produit;";
 	$stmt = $pdo->prepare($req);
 	$result = $stmt->execute();
 	if(!$result){
@@ -613,6 +614,32 @@ function getprevente()  {
 		return $preventes;
 	}
 }
+
+function deleteprevente($idprevente){
+	$pdo=connectDB();
+	if(!$pdo){
+		deconnectDB($pdo);
+		return false;
+	}
+	$REQ = "DELETE FROM participation WHERE id_prevente = ?";
+	$stmt = $pdo->prepare($REQ);
+	$result = $stmt->execute([$idprevente]);
+	if(!$result){
+		deconnectDB($pdo);
+		return false;
+	}
+	$req = "DELETE FROM prevente WHERE id_prevente = ?";
+	$stmt = $pdo->prepare($req);
+	$result = $stmt->execute([$idprevente]);
+	if($result){
+		deconnectDB($pdo);
+		return true;
+	}
+
+
+ 
+}
+
 
 function preventClient(){
 	$pdo=connectDB();
@@ -840,17 +867,17 @@ function uploadPic($file) {
         return false;
     }
     
-    // Générer un nom unique et déplacer le fichier
+    // Générer un nom unique
     $uniqueName = uniqid('img_', true) . '.' . $extension;
     $targetFile = $uploadDir . $uniqueName;
     
     if (move_uploaded_file($file['tmp_name'], $targetFile)) {
-        return $targetFile;
+        // IMPORTANT : Retourner SEULEMENT le chemin relatif, PAS le chemin absolu
+        return $targetFile;  // Retourne "uploads/img_12345.png"
     }
     
     return false;
-}
-function generateInvoiceNumber() {
+}function generateInvoiceNumber() {
     $year = date('Y');
     $random = str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
     return "FACT-{$year}-{$random}";

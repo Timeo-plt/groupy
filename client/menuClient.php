@@ -7,6 +7,19 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+           <style>
+        .product-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        table td {
+            vertical-align: middle;
+        }
+    </style>
 </head>
 <header>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -40,13 +53,12 @@
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
 <?php
 require('../fonctions/login_fonction.php');
-
 if($preventeClient = preventClient()){
     foreach($preventeClient as $produit){
         echo "<div class='col'>
                 <div class='card h-100'>
                     <div class='card-body'>
-                        <h5 class='card-title'>".$produit['image']."</h5>
+                        <h5 class='card-title'><img src='../vendeur/".$produit['image']."' alt='image produit' class='img-fluid'></h5>
                         <p class='card-text'>".$produit['description']."</p>   
                         <p class='card-text'><s class='text-muted'>Prix normal: ".$produit['prix']." €</s></p>
                         <p class='card-text fw-bold text-success'>Prix de la prevente : ".$produit['prix_prevente']." €</p>
